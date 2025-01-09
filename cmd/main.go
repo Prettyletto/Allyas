@@ -3,95 +3,19 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"math"
 	"os"
-	"path/filepath"
 	"strings"
+
+	"github.com/Prettyletto/Allyas/cmd/utils"
 )
 
-var usrShellRc string = GetDefaulDotFile()
-var aliasFile string = GetDefaulDotFile() + "_aliases"
+var usrShellRc string = utils.GetDefaulDotFile()
+var aliasFile string = utils.GetDefaulDotFile() + "_aliases"
 var sourceCommand string = fmt.Sprintf("[[ ! -f %s ]] || source %s ", aliasFile, aliasFile)
 
-func Error(prompt string) {
-	fmt.Printf("\033[31mERROR: %s\033[0\n", prompt)
-}
-
-func Success(prompt string) {
-	fmt.Printf("\033[32m: %s\033[0\n", prompt)
-}
-
-func GetHomeDir() string {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		log.Fatal(err)
-	}
-	return homeDir
-}
-func GetDefaulDotFile() string {
-	usrShell := strings.Split(os.Getenv("SHELL"), "/")
-	rc := usrShell[len(usrShell)-1] + "rc"
-	dotfile := filepath.Join(GetHomeDir(), "."+rc)
-
-	return dotfile
-}
-
-func FileExists(fileName string) bool {
-	_, err := os.Stat(fileName)
-	return err == nil
-}
-
-func CreateFile(fileName string) bool {
-	_, err := os.Create(fileName)
-	if err != nil {
-		Error("Error in creating the file")
-		return false
-	}
-	Success("File created in: " + fileName)
-	return true
-
-}
-
-func SearchInFile(fileName string, pattern string) int {
-	source, err := os.Open(fileName)
-	if err != nil {
-		Error("Error in opening the file" + fileName)
-	}
-	defer source.Close()
-
-	reader := bufio.NewScanner(source)
-	for i := 0; reader.Scan(); i++ {
-		looking := reader.Text()
-		if strings.Contains(looking, pattern) {
-			return i
-		}
-	}
-	return -1
-}
-
-func WriteInFileIndex(fileName string, content string, index int) {
-
-	source, err := os.ReadFile(fileName)
-	if err != nil {
-		Error("Error in opening the file")
-	}
-	lines := strings.Split(string(source), "\n")
-	if index >= 0 {
-		lines[index] = content
-	}
-	lines = append(lines, content)
-
-	output := strings.Join(lines, "\n")
-	err1 := os.WriteFile(fileName, []byte(output), 0644)
-	if err1 != nil {
-		Error("Error writing in the file")
-	}
-
-}
-
 func Create(aliasFile string, args []string) {
-	index := SearchInFile(aliasFile, args[0])
+	index := utils.SearchInFile(aliasFile, args[0])
 	if index != -1 {
 		fmt.Println("This alias already exist on file, check for -list or update it with -update")
 		return
@@ -100,19 +24,20 @@ func Create(aliasFile string, args []string) {
 	alias := fmt.Sprintf("alias %s=\"%s\"", args[0], args[1])
 	input := defaultDesc + "\n" + alias
 	fmt.Println(input)
-	WriteInFileIndex(aliasFile, input, -1)
+	utils.WriteInFileIndex(aliasFile, input, -1)
 
-	Success("Alias created with sucess")
+	utils.Success("Alias created with sucess")
 	fmt.Printf("You should still source from %s to update your current shell session\n", aliasFile)
 }
 
 func List(aliasFile string, args []string) {
 	source, err := os.Open(aliasFile)
 	if err != nil {
-		Error("Something went wrong openning the file")
+		utils.Error("Something went wrong openning the file")
 	}
 	defer source.Close()
 
+	var sb strings.Builder
 	var results []string
 	reader := bufio.NewScanner(source)
 	var desc string
@@ -124,27 +49,42 @@ func List(aliasFile string, args []string) {
 		line := reader.Text()
 
 		if line != "" && line[0] == '#' {
-			descpadding = int(math.Max(float64(descpadding), float64(len(line))))
+			descpadding = int(math.Max(float64(descpadding), float64(len(line)))) + 3
 			desc = line
 		}
 
 		if strings.Contains(line, "alias") && line[0] != '#' {
 			parsing := strings.Split(line, "=")
 			alias := strings.Replace(parsing[0], "alias", "", -1)
-			aliaspadding = int(math.Max(float64(aliaspadding), float64(len(alias))))
+			aliaspadding = int(math.Max(float64(aliaspadding), float64(len(alias)))) + 3
 			command := strings.Replace(parsing[1], "\"", "", -1)
-			commandpadding = int(math.Max(float64(commandpadding), float64(len(command))))
-			parsed := alias + " → " + command + " " + desc
-			results = append(results, parsed)
+			commandpadding = int(math.Max(float64(commandpadding), float64(len(command)))) + 3
+			results = append(results, alias, command, desc)
 
 		}
 
 	}
+	for i, v := range results {
+		if i%3 == 0 {
+			input := strings.TrimSpace(v) + strings.Repeat(" ", aliaspadding-(len(v)))
+			utils.Attach(&sb, input, "-> ")
+		}
+		if i%3 == 1 {
+			input := strings.TrimSpace(v) + strings.Repeat(" ", commandpadding-len(v))
+			utils.Attach(&sb, input)
+		}
+		if i%3 == 2 {
+			input := strings.TrimSpace(v) + strings.Repeat(" ", descpadding-len(v))
+			utils.Attach(&sb, input)
+		}
+		if (i+1)%3 == 0 {
+			utils.Attach(&sb, "\n")
+		}
 
-	for _, v := range results {
-
-		fmt.Println(v)
 	}
+
+	fmt.Println(sb.String())
+
 }
 
 func Dispatcher(args []string) {
@@ -169,11 +109,11 @@ func Dispatcher(args []string) {
 func main() {
 	sourceDescription := "#Load aliases from file\n" + sourceCommand
 
-	if !FileExists(aliasFile) {
-		CreateFile(aliasFile)
+	if !utils.FileExists(aliasFile) {
+		utils.CreateFile(aliasFile)
 	}
-	if SearchInFile(usrShellRc, sourceCommand) == -1 {
-		WriteInFileIndex(usrShellRc, sourceDescription, -1)
+	if utils.SearchInFile(usrShellRc, sourceCommand) == -1 {
+		utils.WriteInFileIndex(usrShellRc, sourceDescription, -1)
 	}
 	Dispatcher(os.Args)
 
