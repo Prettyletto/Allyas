@@ -56,13 +56,19 @@ func SearchInFile(fileName string, pattern string) int {
 	return -1
 }
 
-func WriteInFileIndex(fileName string, content string, index int) {
+func WriteInFileIndex(fileName string, content string, index int, trim bool) {
 
 	source, err := os.ReadFile(fileName)
 	if err != nil {
 		Error("Error in opening the file")
 	}
-	lines := strings.Split(strings.TrimRight(string(source), "\n"), "\n")
+	var lines []string
+	if trim {
+		lines = strings.Split(strings.TrimRight(string(source), "\n"), "\n")
+	} else {
+		lines = strings.Split(string(source), "\n")
+	}
+
 	if index >= 0 && index <= len(lines) {
 		lines[index] = content
 	}
