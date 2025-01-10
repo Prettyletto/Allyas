@@ -10,20 +10,48 @@ import (
 	"github.com/Prettyletto/Allyas/cmd/utils"
 )
 
+type Alias struct {
+	name        string
+	command     string
+	description string
+}
+
+func ParseAlias(args []string) (Alias, error) {
+	if len(args) < 2 {
+		return Alias{}, fmt.Errorf("Not enough arguments: expected <name> and <command>")
+	}
+
+	alias := Alias{
+		name:        args[0],
+		command:     args[1],
+		description: "#" + args[0],
+	}
+	if len(args) > 2 {
+		alias.description = args[2]
+	}
+	return alias, nil
+}
+
 var usrShellRc string = utils.GetDefaulDotFile()
 var aliasFile string = utils.GetDefaulDotFile() + "_aliases"
 var sourceCommand string = fmt.Sprintf("[[ ! -f %s ]] || source %s ", aliasFile, aliasFile)
 
 func Create(aliasFile string, args []string) {
+	if len(args) < 2 {
+		fmt.Println("Insufficient Arguments: -create <alias> <command>")
+		return
+	}
 	index := utils.SearchInFile(aliasFile, args[0])
 	if index != -1 {
 		fmt.Println("This alias already exist on file, check for -list or update it with -update")
 		return
 	}
-	defaultDesc := "#" + args[0]
-	alias := fmt.Sprintf("alias %s=\"%s\"", args[0], args[1])
-	input := defaultDesc + "\n" + alias
-	fmt.Println(input)
+	alias, err := ParseAlias(args)
+	if err != nil {
+		utils.Error(err.Error())
+	}
+
+	input := fmt.Sprintf("%s\nalias %s=\"%s\"", alias.description, alias.name, alias.command)
 	utils.WriteInFileIndex(aliasFile, input, -1)
 
 	utils.Success("Alias created with sucess")
@@ -37,53 +65,73 @@ func List(aliasFile string, args []string) {
 	}
 	defer source.Close()
 
-	var sb strings.Builder
-	var results []string
 	reader := bufio.NewScanner(source)
+	var sb strings.Builder
 	var desc string
 	var aliaspadding int
 	var commandpadding int
 	var descpadding int
+	var aliases []Alias
 
 	for reader.Scan() {
 		line := reader.Text()
 
 		if line != "" && line[0] == '#' {
-			descpadding = int(math.Max(float64(descpadding), float64(len(line)))) + 3
+			descpadding = int(math.Max(float64(descpadding), float64(len(line))))
 			desc = line
 		}
 
 		if strings.Contains(line, "alias") && line[0] != '#' {
 			parsing := strings.Split(line, "=")
 			alias := strings.Replace(parsing[0], "alias", "", -1)
-			aliaspadding = int(math.Max(float64(aliaspadding), float64(len(alias)))) + 3
+			aliaspadding = int(math.Max(float64(aliaspadding), float64(len(alias))))
 			command := strings.Replace(parsing[1], "\"", "", -1)
-			commandpadding = int(math.Max(float64(commandpadding), float64(len(command)))) + 3
-			results = append(results, alias, command, desc)
-
+			commandpadding = int(math.Max(float64(commandpadding), float64(len(command))))
+			aliases = append(aliases, Alias{alias, command, desc})
 		}
-
 	}
-	for i, v := range results {
-		if i%3 == 0 {
-			input := strings.TrimSpace(v) + strings.Repeat(" ", aliaspadding-(len(v)))
-			utils.Attach(&sb, input, "-> ")
-		}
-		if i%3 == 1 {
-			input := strings.TrimSpace(v) + strings.Repeat(" ", commandpadding-len(v))
-			utils.Attach(&sb, input)
-		}
-		if i%3 == 2 {
-			input := strings.TrimSpace(v) + strings.Repeat(" ", descpadding-len(v))
-			utils.Attach(&sb, input)
-		}
-		if (i+1)%3 == 0 {
-			utils.Attach(&sb, "\n")
-		}
+	for _, v := range aliases {
+		nameLenght := len(v.name)
+		commandLenght := len(v.command)
+		descLenght := len(v.description)
 
+		v.name += strings.Repeat(" ", (aliaspadding-nameLenght)+3) + "-> "
+		v.command += strings.Repeat(" ", (commandpadding-commandLenght)+3)
+		v.description += strings.Repeat(" ", (descpadding-descLenght)+3)
+		utils.Attach(&sb, v.name, v.command, v.description, "\n")
 	}
-
 	fmt.Println(sb.String())
+}
+
+func Edit(fileName string, args []string) {
+	if len(args) < 3 {
+		fmt.Println("Insuficient Arguments: -edit <oldalias> <newalias> <command>")
+		return
+	}
+	index := utils.SearchInFile(aliasFile, args[0])
+	if index == -1 {
+		fmt.Println("This alias does not exist in the file")
+	}
+
+	alias, err := ParseAlias(args[1:])
+	if err != nil {
+		utils.Error(err.Error())
+	}
+	input := fmt.Sprintf("%s\nalias %s=\"%s\"", alias.description, alias.name, alias.command)
+	utils.WriteInFileIndex(aliasFile, input, index)
+}
+
+func Remove(fileName string, args []string) {
+	if len(args) < 1 {
+		fmt.Println("Insufficient Arguments: -remove <alias>")
+		return
+	}
+	index := utils.SearchInFile(aliasFile, args[0])
+	if index == -1 {
+		fmt.Println("There's no such alias named: " + args[0])
+	}
+	utils.WriteInFileIndex(aliasFile, "", index)
+	utils.WriteInFileIndex(aliasFile, "", index-1)
 
 }
 
@@ -96,10 +144,12 @@ func Dispatcher(args []string) {
 	switch commands[0] {
 	case "-create":
 		Create(aliasFile, commands[1:])
-		break
 	case "-list":
 		List(aliasFile, commands[1:])
-		break
+	case "-edit":
+		Edit(aliasFile, commands[1:])
+	case "-remove":
+		Remove(aliasFile, commands[1:])
 	default:
 		fmt.Println("Unknow Command try allyas -h ")
 		break
