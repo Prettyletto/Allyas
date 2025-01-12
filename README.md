@@ -79,9 +79,9 @@ allyas edit old_name option new_value
 ```
 
 - **`option`**: The option you want to modify:
-  - **`-a`**: Edit the alias name.
-  - **`-c`**: Edit the command associated with the alias.
-  - **`-d`**: Edit the description for the alias.
+  - **`--a`**: Edit the alias name.
+  - **`--c`**: Edit the command associated with the alias.
+  - **`--d`**: Edit the description for the alias.
 
 ---
 
