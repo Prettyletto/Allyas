@@ -89,9 +89,12 @@ func WriteInFileIndex(fileName string, content string, index int, trim bool) {
 	} else {
 		lines = strings.Split(string(source), "\n")
 	}
-
 	if index >= 0 && index <= len(lines) {
-		lines[index] = content
+		if content == "" {
+			lines = append(lines[:index], lines[index+1:]...)
+		} else {
+			lines[index] = content
+		}
 	}
 	if index == -1 {
 		lines = append(lines, content)

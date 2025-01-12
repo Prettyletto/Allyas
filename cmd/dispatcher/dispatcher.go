@@ -13,10 +13,11 @@ type CommandDispatcher struct {
 func NewDispatcher(aliasFile string) *CommandDispatcher {
 	return &CommandDispatcher{
 		Commands: map[string]commands.Command{
-			"-create": &commands.CreateCommand{AliasFile: aliasFile},
-			"-edit":   &commands.EditCommand{AliasFile: aliasFile},
-			"-list":   &commands.ListCommand{AliasFile: aliasFile},
-			"-remove": &commands.RemoveCommand{AliasFile: aliasFile},
+			"-c": &commands.CreateCommand{AliasFile: aliasFile},
+			"-e": &commands.EditCommand{AliasFile: aliasFile},
+			"-l": &commands.ListCommand{AliasFile: aliasFile},
+			"-r": &commands.RemoveCommand{AliasFile: aliasFile},
+			"-h": &commands.HelpCommand{},
 		},
 	}
 }
@@ -29,7 +30,11 @@ func (d *CommandDispatcher) Dispatch(args []string) {
 	commandName := args[1]
 	command, exists := d.Commands[commandName]
 	if !exists {
-		fmt.Println("Unknow Command: try allyas -h")
+		fmt.Println("Unknow Command: try to use -h")
+		return
+	}
+	if commandName == "-h" {
+		command.Execute(args)
 		return
 	}
 	command.Execute(args[2:])

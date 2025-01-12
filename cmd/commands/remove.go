@@ -22,4 +22,5 @@ func (c *RemoveCommand) Execute(args []string) {
 	utils.WriteInFileIndex(c.AliasFile, "", index, true)
 	utils.WriteInFileIndex(c.AliasFile, "", index-1, true)
 
+	utils.Success("Succesfully removed alias: " + args[0])
 }

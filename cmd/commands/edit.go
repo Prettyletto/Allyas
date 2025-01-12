@@ -20,6 +20,9 @@ func format(line, desc string) ([]string, error) {
 	if len(toFormat) < 2 {
 		return nil, fmt.Errorf("Invalid desc or alias in")
 	}
+	for _, v := range toFormat {
+		v = strings.TrimSpace(v)
+	}
 
 	return []string{toFormat[0], toFormat[1], desc}, nil
 }
@@ -54,6 +57,7 @@ func editAlias(aliasFile, aliasName, newValue string, edit rune) error {
 	fmt.Println(alias)
 	input := fmt.Sprintf("%s\nalias %s=%s", alias.Description, alias.Name, alias.Command)
 	utils.WriteInFileIndex(aliasFile, input, index, true)
+	utils.WriteInFileIndex(aliasFile, "", index-1, true)
 	return nil
 
 }
