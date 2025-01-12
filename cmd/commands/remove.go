@@ -15,7 +15,7 @@ func (c *RemoveCommand) Execute(args []string) {
 		fmt.Println("Insufficient Arguments: -remove <alias>")
 		return
 	}
-	index := utils.SearchInFile(c.AliasFile, args[0])
+	index := utils.GetIndexInFile(c.AliasFile, args[0])
 	if index == -1 {
 		fmt.Println("There's no such alias named: " + args[0])
 	}

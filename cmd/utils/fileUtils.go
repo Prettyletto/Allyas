@@ -2,6 +2,7 @@ package utils
 
 import (
 	"bufio"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -39,7 +40,27 @@ func CreateFile(fileName string) bool {
 
 }
 
-func SearchInFile(fileName string, pattern string) int {
+func GetLineInFile(fileName string, index int) string {
+	if index < 0 {
+		fmt.Println("Theres no such item is this file")
+	}
+	source, err := os.Open(fileName)
+	if err != nil {
+		Error("Error in opening the file" + fileName)
+	}
+	defer source.Close()
+
+	reader := bufio.NewScanner(source)
+	for i := 0; reader.Scan(); i++ {
+		looking := reader.Text()
+		if i == index {
+			return looking
+		}
+	}
+	return ""
+}
+
+func GetIndexInFile(fileName string, pattern string) int {
 	source, err := os.Open(fileName)
 	if err != nil {
 		Error("Error in opening the file" + fileName)

@@ -18,7 +18,7 @@ func main() {
 	if !utils.FileExists(aliasFile) {
 		utils.CreateFile(aliasFile)
 	}
-	if utils.SearchInFile(usrShellRc, sourceCommand) == -1 {
+	if utils.GetIndexInFile(usrShellRc, sourceCommand) == -1 {
 		utils.WriteInFileIndex(usrShellRc, sourceDescription, -1, false)
 	}
 	dispatcher := dispatcher.NewDispatcher(aliasFile)

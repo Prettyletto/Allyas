@@ -18,6 +18,7 @@ func (c *ListCommand) Execute(args []string) {
 	source, err := os.Open(c.AliasFile)
 	if err != nil {
 		utils.Error("Something went wrong openning the file")
+		return
 	}
 	defer source.Close()
 

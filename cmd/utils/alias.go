@@ -8,6 +8,11 @@ type Alias struct {
 	Description string
 }
 
+func StringParserAlias(line string) (Alias, error) {
+
+	return Alias{}, nil
+}
+
 func ParseAlias(args []string) (Alias, error) {
 	if len(args) < 2 {
 		return Alias{}, fmt.Errorf("Not enough arguments: expected <name> and <command>")

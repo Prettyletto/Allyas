@@ -15,7 +15,7 @@ func (c *CreateCommand) Execute(args []string) {
 		fmt.Println("Insufficient Arguments: -create <alias> <command>")
 		return
 	}
-	index := utils.SearchInFile(c.AliasFile, args[0]+"=")
+	index := utils.GetIndexInFile(c.AliasFile, args[0]+"=")
 	if index != -1 {
 		fmt.Println("This alias already exist on file, check for -list or update it with -update")
 		return
