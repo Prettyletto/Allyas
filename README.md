@@ -16,7 +16,7 @@ Alias Manager is a simple CLI tool written in Go that helps you manage your shel
 
    ```bash
    git clone https://github.com/prettyletto/allyas.git
-   cd alias-manager
+   cd allyas
    ```
 
 2. Build the tool using `make`:
