@@ -23,11 +23,13 @@ func NewDispatcher(aliasFile string) *CommandDispatcher {
 }
 
 func (d *CommandDispatcher) Dispatch(args []string) {
-	if len(args) < 1 {
-		fmt.Println("Usage: allyas <-command> <args>")
-		return
+
+	var commandName string
+	if len(args) <= 1 {
+		commandName = "-h"
+	} else {
+		commandName = args[1]
 	}
-	commandName := args[1]
 	command, exists := d.Commands[commandName]
 	if !exists {
 		fmt.Println("Unknow Command: try to use -h")
