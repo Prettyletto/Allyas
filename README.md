@@ -178,7 +178,3 @@ This will delete the `my_alias` entry from the `ally_aliases` file.
 
 
 
-
-
-
-Now based on these examples and commands i need to build a -h for my application 
