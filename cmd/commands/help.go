@@ -6,13 +6,17 @@ type HelpCommand struct {
 }
 
 func (c *HelpCommand) Execute(args []string) {
-	fmt.Printf("Usage: %s [command] [options]\n\n", args[0])
+	fmt.Println(`Allyas Manager - A simple CLI tool to manage your shell aliases.
 
-	fmt.Println(`Commands:
-  create
-  list
-		edit
-  remove
+Usage:
+  allyas [command] [args]
 
-Options:`)
+Available Commands:
+  create      Create a new alias.
+  list        List all aliases.
+  edit        Edit an existing alias.
+  remove      Remove an alias.
+
+Flags:
+  -h    Show this help message and exit`)
 }

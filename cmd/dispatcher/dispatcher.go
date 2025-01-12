@@ -13,11 +13,11 @@ type CommandDispatcher struct {
 func NewDispatcher(aliasFile string) *CommandDispatcher {
 	return &CommandDispatcher{
 		Commands: map[string]commands.Command{
-			"-c": &commands.CreateCommand{AliasFile: aliasFile},
-			"-e": &commands.EditCommand{AliasFile: aliasFile},
-			"-l": &commands.ListCommand{AliasFile: aliasFile},
-			"-r": &commands.RemoveCommand{AliasFile: aliasFile},
-			"-h": &commands.HelpCommand{},
+			"create": &commands.CreateCommand{AliasFile: aliasFile},
+			"edit":   &commands.EditCommand{AliasFile: aliasFile},
+			"list":   &commands.ListCommand{AliasFile: aliasFile},
+			"remove": &commands.RemoveCommand{AliasFile: aliasFile},
+			"-h":     &commands.HelpCommand{},
 		},
 	}
 }

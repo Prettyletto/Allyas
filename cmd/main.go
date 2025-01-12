@@ -9,7 +9,7 @@ import (
 )
 
 var usrShellRc string = utils.GetDefaulDotFile()
-var aliasFile string = utils.GetDefaulDotFile() + "_aliases"
+var aliasFile string = utils.GetHomeDir() + "/.allyas_aliases"
 var sourceCommand string = fmt.Sprintf("[[ ! -f %s ]] || source %s ", aliasFile, aliasFile)
 
 func main() {
