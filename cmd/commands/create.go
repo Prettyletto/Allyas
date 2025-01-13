@@ -17,7 +17,7 @@ func (c *CreateCommand) Execute(args []string) {
 	}
 	index := utils.GetIndexInFile(c.AliasFile, args[0]+"=")
 	if index != -1 {
-		fmt.Println("This alias already exist on file, check for -list or update it with -update")
+		fmt.Println("This alias already exist on file, check for list or update it with edit command")
 		return
 	}
 	alias, err := utils.ParseAlias(args)
